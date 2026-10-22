@@ -1,6 +1,8 @@
 using Nebula.Seq;
+using System.Diagnostics;
 
 // Offline executable fixture for testing process pipes, flags, cancellation and isolation.
+if (args.Contains("--hold-workspace")) { await Task.Delay(1200); return 0; }
 var prompt = await Console.In.ReadToEndAsync();
 if (prompt.Contains("SIMULATE_TIMEOUT")) { await Task.Delay(TimeSpan.FromSeconds(30)); return 0; }
 if (prompt.Contains("SIMULATE_FAILURE")) return 23;
@@ -16,4 +18,15 @@ var output = args[Array.IndexOf(args, "--output-last-message") + 1];
 await File.WriteAllTextAsync(output, Json.Write(new Decision("new", null, "Order fails", "Observed failure in order handler")));
 var evidence = new SearchEvidence { SuccessfulSearches = 1, NextTokens = new() { ["order"] = null } };
 await File.WriteAllTextAsync(Environment.GetEnvironmentVariable("NEBULA_EVIDENCE_PATH")!, Json.Write(evidence));
+if (prompt.Contains("SIMULATE_LOCKED_EXIT"))
+{
+    // Keep the Windows working-directory handle open after the parent has exited.
+    var start = new ProcessStartInfo(Environment.ProcessPath!) {
+        WorkingDirectory = Environment.CurrentDirectory, UseShellExecute = false, CreateNoWindow = true,
+        RedirectStandardInput = true, RedirectStandardOutput = true, RedirectStandardError = true
+    };
+    start.ArgumentList.Add("--hold-workspace");
+    using var holder = Process.Start(start)!;
+    holder.StandardInput.Close();
+}
 return 0;

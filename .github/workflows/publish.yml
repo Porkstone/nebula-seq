@@ -1,0 +1,75 @@
+name: Publish NuGet package
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Package version to publish (for example 0.1.0)'
+        required: true
+        default: '0.1.0'
+        type: string
+      nuget_user:
+        description: 'Your NuGet.org username (the account that created the trusted publishing policy)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nuget-publish
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: windows-latest
+    env:
+      PACKAGE_VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      - name: Build, test and verify package
+        shell: pwsh
+        run: ./Build.ps1 -Version $env:PACKAGE_VERSION
+      - name: Save verified package
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-package
+          path: |
+            artifacts/*.nupkg
+            artifacts/*.nupkg.sha256
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: windows-latest
+    environment: nuget
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      PACKAGE_VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      - uses: actions/download-artifact@v4
+        with:
+          name: nuget-package
+          path: artifacts
+      - name: Authenticate to NuGet.org using OIDC
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ inputs.nuget_user }}
+      - name: Publish verified package
+        shell: pwsh
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        run: >-
+          dotnet nuget push "artifacts/Seq.App.Nebula.$env:PACKAGE_VERSION.nupkg"
+          --api-key $env:NUGET_API_KEY
+          --source https://api.nuget.org/v3/index.json

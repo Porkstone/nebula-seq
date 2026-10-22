@@ -29,6 +29,16 @@ public class CodexTests
     }
 
     [Fact]
+    public async Task CleanupRetriesWhenExitedProcessWorkspaceIsStillLocked()
+    {
+        using var dir = new TestDirectory();
+        var result = await new CodexSearch(Settings, "unused", dir.Path)
+            .SearchAsync(Samples.Event with { Details = "SIMULATE_LOCKED_EXIT" }, default);
+        Assert.Equal("new", result.Decision.Action);
+        Assert.Empty(Directory.GetDirectories(dir.Path));
+    }
+
+    [Fact]
     public async Task TimeoutKillsProcessAndCleansFiles()
     {
         using var dir = new TestDirectory(); using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(700));

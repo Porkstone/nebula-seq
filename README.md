@@ -65,7 +65,7 @@ Event properties matching the configured name fragments are redacted recursively
 
 The redacted event and search excerpts leave the server for your selected OpenRouter model/provider. A ticket stores the redacted event, capped analysis and source link. Codex uses an isolated temporary home and work directory per event, read-only sandbox, disabled shell tools and web search, no user/project instructions, and only the bundled read-only Jira MCP server. Credentials are passed via child process environment variables, not prompt text, command arguments or config files. Seq password settings mask credentials in the UI; Seq administrators and the host service account are trusted.
 
-Run files are deleted after each normal attempt; a hard server crash can leave `nebula-runs` directories in the app's storage, which an administrator can remove while the app is stopped. Persistent receipts contain only status, fingerprint (filename), issue key and timestamp. Dry-run drafts additionally contain the redacted event and proposed ticket text; remove drafts when no longer needed. Diagnostics record the outcome and identifiers; raw event details, model reasoning and Jira response bodies are not logged.
+Run cleanup retries temporary file locks after a process exits. A hard server crash or a persistent file lock can leave `nebula-runs` directories in the app's storage, which an administrator can remove while the app is stopped. Persistent receipts contain only status, fingerprint (filename), issue key and timestamp. Dry-run drafts additionally contain the redacted event and proposed ticket text; remove drafts when no longer needed. Diagnostics record the outcome and identifiers; raw event details, model reasoning and Jira response bodies are not logged.
 
 ## Build and verify
 
@@ -79,7 +79,22 @@ The script restores, builds, runs offline integration/unit tests, creates the `.
 
 ## Publishing
 
-Publish the verified file with a NuGet.org API key scoped to `Seq.App.Nebula` (`Push new packages and package versions`). Keep credentials outside this repository. Version numbers are immutable after publishing.
+The dedicated [Publish NuGet package workflow](https://github.com/Porkstone/nebula-seq/actions/workflows/publish.yml) uses NuGet trusted publishing with GitHub OIDC. It runs manually from `main`, builds and tests the selected version, and publishes the verified artifact from the `nuget` environment. Version numbers are immutable after publishing.
+
+Configure the NuGet.org trusted publishing policy with:
+
+| Field | Value |
+| --- | --- |
+| Repository owner | `Porkstone` |
+| Repository | `nebula-seq` |
+| Workflow file | `publish.yml` (filename only) |
+| Environment | `nuget` |
+| Push scope | Push new packages and package versions |
+| Package glob | `Seq.App.Nebula` |
+
+Choose your intended NuGet package owner (for example, the `nebula-foss` organization) in the policy. In GitHub Actions, choose **Publish NuGet package → Run workflow**, select `main`, enter a version such as `0.1.0`, and supply the NuGet.org username of the account that created the policy. This is a NuGet profile username, not an email address; when an organization owns the package, use the individual policy creator's username. No stored API key is needed. The GitHub `nuget` environment permits deployments from `main` only.
+
+For a local CLI upload instead, use a NuGet.org API key scoped to `Seq.App.Nebula` (`Push new packages and package versions`). Keep credentials outside this repository.
 
 ```powershell
 dotnet nuget push ./artifacts/Seq.App.Nebula.0.1.0.nupkg --source https://api.nuget.org/v3/index.json --api-key $env:NUGET_API_KEY

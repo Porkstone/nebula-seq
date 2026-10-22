@@ -69,8 +69,27 @@ public sealed class CodexSearch(Settings settings, string bridgePath, string run
         }
         finally
         {
-            // Only remove the GUID directory allocated by this invocation.
-            if (Directory.Exists(run)) Directory.Delete(run, recursive: true);
+            await CleanRunDirectoryAsync(run);
+        }
+    }
+
+    private static async Task CleanRunDirectoryAsync(string run)
+    {
+        // Windows can retain a process's working-directory handle briefly after exit.
+        // Cleanup must not replace the original timeout/failure with an IOException.
+        // Only remove the GUID directory allocated by this invocation.
+        for (var attempt = 0; attempt < 8; attempt++)
+        {
+            try
+            {
+                if (Directory.Exists(run)) Directory.Delete(run, recursive: true);
+                return;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                if (attempt == 7) return; // An administrator can remove a persistently locked run.
+                await Task.Delay(TimeSpan.FromMilliseconds(Math.Min(100 * (1 << attempt), 1000)));
+            }
         }
     }
 
