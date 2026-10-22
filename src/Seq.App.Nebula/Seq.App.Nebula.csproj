@@ -5,6 +5,7 @@
     <Description>Turn Seq errors into deduplicated Jira bugs using Codex CLI through OpenRouter.</Description>
     <PackageTags>seq-app;seq;jira;openrouter;codex</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/Porkstone/nebula-seq</RepositoryUrl>
     <PackageProjectUrl>https://github.com/Porkstone/nebula-seq</PackageProjectUrl>
@@ -17,6 +18,7 @@
     <ProjectReference Include="../Nebula.Seq.Core/Nebula.Seq.Core.csproj" />
     <ProjectReference Include="../Nebula.Seq.JiraMcp/Nebula.Seq.JiraMcp.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
     <None Include="../../README.md" Pack="true" PackagePath="/" />
+    <None Include="../../LICENSE" Pack="true" PackagePath="/" />
   </ItemGroup>
   <Target Name="BundleRuntime" BeforeTargets="_GetPackageFiles">
     <ItemGroup>

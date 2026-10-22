@@ -85,6 +85,10 @@ Publish the verified file with a NuGet.org API key scoped to `Seq.App.Nebula` (`
 dotnet nuget push ./artifacts/Seq.App.Nebula.0.1.0.nupkg --source https://api.nuget.org/v3/index.json --api-key $env:NUGET_API_KEY
 ```
 
+## Licence
+
+Licensed under the [MIT licence](LICENSE).
+
 ## References
 
 - [Seq app development and packaging](https://datalust.co/docs/writing-seq-apps)
