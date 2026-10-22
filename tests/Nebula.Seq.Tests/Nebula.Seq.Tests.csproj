@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Seq.Apps" Version="2023.4.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" PrivateAssets="all" />
+    <ProjectReference Include="../../src/Nebula.Seq.Core/Nebula.Seq.Core.csproj" />
+    <ProjectReference Include="../../src/Seq.App.Nebula/Seq.App.Nebula.csproj" />
+    <ProjectReference Include="../Nebula.Seq.FakeCodex/Nebula.Seq.FakeCodex.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  <Target Name="CopyTestExecutables" AfterTargets="Build">
+    <ItemGroup>
+      <Fixtures Include="../Nebula.Seq.FakeCodex/bin/$(Configuration)/net9.0/*" />
+      <Bridge Include="../../src/Nebula.Seq.JiraMcp/bin/$(Configuration)/net8.0/Nebula.Seq.JiraMcp.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(Fixtures)" DestinationFolder="$(TargetDir)fake-codex" />
+    <Copy SourceFiles="@(Bridge)" DestinationFolder="$(TargetDir)" />
+  </Target>
+</Project>

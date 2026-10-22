@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <UseAppHost>false</UseAppHost>
+    <RollForward>LatestMajor</RollForward>
+  </PropertyGroup>
+  <ItemGroup><ProjectReference Include="../Nebula.Seq.Core/Nebula.Seq.Core.csproj" /></ItemGroup>
+</Project>
