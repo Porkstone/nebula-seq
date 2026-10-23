@@ -17,12 +17,14 @@ Codex, its selected model, and the installed Seq runtime are host prerequisites;
 
 Package ID: **`Seq.App.Nebula`**.
 
-1. For a local package, copy `artifacts/Seq.App.Nebula.0.1.0.nupkg` to a folder on the Seq server, e.g. `C:\Packages`.
+1. For a local package, copy `artifacts/Seq.App.Nebula.0.1.1.nupkg` to a folder on the Seq server, e.g. `C:\Packages`.
 2. In Seq **Settings → Feeds**, add that folder as a feed. For the public release use the NuGet.org feed instead.
 3. Open **Settings → Apps → Install**, select the feed and install `Seq.App.Nebula`.
 4. Start a new instance and configure the settings below. Keep **Dry run** enabled for the first event.
 5. Send a known Error event using **Send to app**. Confirm the diagnostics show `existing` or `dry-run-would-create`. For a proposed new ticket, review the redacted JSON draft under the `drafts` subfolder of the state path reported in the startup diagnostics.
 6. Disable **Dry run** to enable ticket creation. For continuous operation, enable **Stream incoming events** and select a signal such as `@Level in ['Error', 'Fatal']` with your application filter.
+
+Use **0.1.1 or later**. Version 0.1.0 has an invalid `//LICENSE` part URI in its NuGet content-type manifest and fails installation in Seq with "Part URI cannot start with two forward slashes." Version 0.1.1 corrects the package path; the build now verifies packages using the legacy OPC reader before publishing.
 
 ## Settings
 
@@ -69,13 +71,13 @@ Run cleanup retries temporary file locks after a process exits. A hard server cr
 
 ## Build and verify
 
-Requires .NET SDK 9 (tests run on .NET 9; the app and helper target .NET 8):
+Requires Windows with Windows PowerShell 5.1 and .NET SDK 9 (tests run on .NET 9; the app and helper target .NET 8):
 
 ```powershell
 ./Build.ps1
 ```
 
-The script restores, builds, runs offline integration/unit tests, creates the `.nupkg`, and verifies that it bundles the helper and core library without `Seq.Apps.dll`, `Serilog.dll` or external package dependencies. Use `-Version 0.1.1` for a subsequent release. The tests use fake Jira HTTP responses and a fake Codex process; live credentials and model requests are not required.
+The script restores, builds, runs offline integration/unit tests, creates the `.nupkg`, and verifies that it bundles the helper and core library without `Seq.Apps.dll`, `Serilog.dll` or external package dependencies. It also opens the package with the WindowsBase OPC reader used by older NuGet consumers to reject invalid part URIs. Use `-Version 0.1.2` for a subsequent release. The tests use fake Jira HTTP responses and a fake Codex process; live credentials and model requests are not required.
 
 ## Publishing
 
@@ -92,12 +94,12 @@ Configure the NuGet.org trusted publishing policy with:
 | Push scope | Push new packages and package versions |
 | Package glob | `Seq.App.Nebula` |
 
-Choose your intended NuGet package owner (for example, the `nebula-foss` organization) in the policy. In GitHub Actions, choose **Publish NuGet package → Run workflow**, select `main`, enter a version such as `0.1.0`, and supply the NuGet.org username of the account that created the policy. This is a NuGet profile username, not an email address; when an organization owns the package, use the individual policy creator's username. No stored API key is needed. The GitHub `nuget` environment permits deployments from `main` only.
+Choose your intended NuGet package owner (for example, the `nebula-foss` organization) in the policy. In GitHub Actions, choose **Publish NuGet package → Run workflow**, select `main`, enter a version such as `0.1.1`, and supply the NuGet.org username of the account that created the policy. This is a NuGet profile username, not an email address; when an organization owns the package, use the individual policy creator's username. No stored API key is needed. The GitHub `nuget` environment permits deployments from `main` only.
 
 For a local CLI upload instead, use a NuGet.org API key scoped to `Seq.App.Nebula` (`Push new packages and package versions`). Keep credentials outside this repository.
 
 ```powershell
-dotnet nuget push ./artifacts/Seq.App.Nebula.0.1.0.nupkg --source https://api.nuget.org/v3/index.json --api-key $env:NUGET_API_KEY
+dotnet nuget push ./artifacts/Seq.App.Nebula.0.1.1.nupkg --source https://api.nuget.org/v3/index.json --api-key $env:NUGET_API_KEY
 ```
 
 ## Licence

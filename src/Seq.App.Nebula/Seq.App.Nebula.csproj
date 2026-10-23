@@ -17,8 +17,8 @@
     <PackageReference Include="Seq.Apps" Version="2023.4.0" PrivateAssets="all" />
     <ProjectReference Include="../Nebula.Seq.Core/Nebula.Seq.Core.csproj" />
     <ProjectReference Include="../Nebula.Seq.JiraMcp/Nebula.Seq.JiraMcp.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
-    <None Include="../../README.md" Pack="true" PackagePath="/" />
-    <None Include="../../LICENSE" Pack="true" PackagePath="/" />
+    <None Include="../../README.md" Pack="true" PackagePath="" />
+    <None Include="../../LICENSE" Pack="true" PackagePath="" />
   </ItemGroup>
   <Target Name="BundleRuntime" BeforeTargets="_GetPackageFiles">
     <ItemGroup>

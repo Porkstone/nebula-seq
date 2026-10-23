@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Package version to publish (for example 0.1.0)'
+        description: 'Package version to publish (for example 0.1.1)'
         required: true
-        default: '0.1.0'
+        default: '0.1.1'
         type: string
       nuget_user:
         description: 'Your NuGet.org username (the account that created the trusted publishing policy)'

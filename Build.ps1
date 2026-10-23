@@ -1,4 +1,4 @@
-param([string]$Version = '0.1.0')
+param([string]$Version = '0.1.1')
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 if ($Version -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$') { throw 'Version must be a SemVer package version.' }
@@ -35,6 +35,12 @@ try {
         if ($manifest.SelectNodes("//*[local-name()='dependency']").Count -gt 0) { throw 'Seq app package must bundle dependencies.' }
     }
     finally { $zip.Dispose() }
+    # Seq's installer uses an OPC package reader, which is stricter than ZipArchive.
+    # Validate with WindowsBase so invalid content-type part URIs fail before upload.
+    $windowsPowerShell = Join-Path $env:SystemRoot 'System32/WindowsPowerShell/v1.0/powershell.exe'
+    if (-not (Test-Path -LiteralPath $windowsPowerShell)) { throw 'Windows PowerShell 5.1 is required for Seq package compatibility validation.' }
+    & $windowsPowerShell -NoProfile -NonInteractive -File (Join-Path $root 'scripts/Test-SeqPackage.ps1') -PackagePath $package
+    if ($LASTEXITCODE -ne 0) { throw 'Seq package reader compatibility validation failed.' }
     $hash = (Get-FileHash -LiteralPath $package -Algorithm SHA256).Hash
     Set-Content -LiteralPath "$package.sha256" -Value "$hash  Seq.App.Nebula.$Version.nupkg" -Encoding ASCII
     Write-Host "Verified package: $package"
